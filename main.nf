@@ -402,7 +402,7 @@ identityKnown
 .set{ repeatmaskerKnowns }
 
 process searchForUnidentifiedElements {
-  container 'robsyme/nf-repeatmasking'
+  container 'luciazifcakova/nf-repeatmasking'
 
   input:
   file 'genome.fasta' from reference
