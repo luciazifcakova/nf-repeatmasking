@@ -264,7 +264,7 @@ blastxPassed
 .set { forExemplarBuilding }
 
 process buildExemplars {
-  container 'robsyme/nf-repeatmasking'
+  container 'luciazifcakova/nf-repeatmasking'
   tag { age }
   cpus 4
 
