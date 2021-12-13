@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 VERSION = "1.0.0"
 
-params.reference = 'data/example/genome.fasta'
+params.reference = '/bucket/MillerU/Zifcakova/Dovetail_ika_genomes/Dovetail_genomev_3_11_2021/jordan-tom1935-mb-hirise-ea8cl__10-20-2021__hic_output.fasta'
 params.trnaprot = 'http://www.hrt.msu.edu/uploads/535/78637/Tpases020812.gz'
 params.trnanuc = 'http://gtrnadb2009.ucsc.edu/download/tRNAs/eukaryotic-tRNAs.fa.gz'
 params.outdir = 'output'
@@ -18,7 +18,7 @@ log.info "output directory   : ${params.outdir}"
 log.info ""
 
 process recentLTRs {
-  container 'robsyme/nf-repeatmasking'
+  container 'luciazifcakova/nf-repeatmasking'
   cache 'deep'
 
   input:
