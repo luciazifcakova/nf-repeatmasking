@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 VERSION = "1.0.0"
 
-params.reference = '/bucket/MillerU/Zifcakova/Dovetail_ika_genomes/Dovetail_genomev_3_11_2021/jordan-tom1935-mb-hirise-ea8cl__10-20-2021__hic_output.fasta'
+params.reference = '/bucket/MillerU/Dong/genome_chr.fasta'
 params.trnaprot = 'http://www.hrt.msu.edu/uploads/535/78637/Tpases020812.gz'
 params.trnanuc = 'http://gtrnadb2009.ucsc.edu/download/tRNAs/eukaryotic-tRNAs.fa.gz'
 params.outdir = 'output'
@@ -18,7 +18,7 @@ log.info "output directory   : ${params.outdir}"
 log.info ""
 
 process recentLTRs {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
   cache 'deep'
 
   input:
@@ -78,7 +78,7 @@ CRL_Step2.pl \
 }
 
 process olderLTRs {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
   cache 'deep'
 
   input:
@@ -142,7 +142,7 @@ outinnerForBlastX = outinnerForBlastXOld.mix(outinnerForBlastXNew)
 ltrHarvestResultsForExemplar = ltrHarvestResultsForExemplarOld.mix(ltrHarvestResultsForExemplarNew)
 
 process CRL_Step3 {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
   tag { age }
 
   input:
@@ -166,7 +166,7 @@ ltrHarvestResults
 .set { nestedInput }
 
 process identifyNestedInsetions {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
   tag { age }
   input:
   file 'genome.fasta' from reference
@@ -187,7 +187,7 @@ cat lLTR_Only.lib \
 }
 
 process RepeatMasker1 {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
   tag { age }
 
   input:
@@ -226,9 +226,9 @@ rmshortinner.pl seqfile.outinner.unmasked 50 > seqfile.outinner.clean
 }
 
 process blastX {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
   tag { age }
-  cpus 4
+  cpus 10
 
   input:
   file 'Tpases020812DNA.fasta.gz' from trnaprot
@@ -264,9 +264,9 @@ blastxPassed
 .set { forExemplarBuilding }
 
 process buildExemplars {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
   tag { age }
-  cpus 4
+  cpus 10
 
   input:
   file 'genome.fasta' from reference
@@ -310,7 +310,7 @@ exemplars
 .choice( newLTRs, oldLTRs ) { it[0] == "new" ? 0 : 1 }
 
 process removeDuplicates {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
 
   input:
   set _, 'ltrs.new.fasta' from newLTRs
@@ -323,7 +323,7 @@ process removeDuplicates {
 }
 
 process filterOldLTRs {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
 
   input:
   set 'ltrs.old.fasta.masked', 'ltrs.new.fasta' from bothLTRforMasking
@@ -346,7 +346,7 @@ allLTR
 .set { inputForRM2 }
 
 process RepeatMasker2 {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
   cpus 10
 
   input:
@@ -368,8 +368,8 @@ RepeatMasker \
 }
 
 process RepeatModeler {
-  container 'luciazifcakova/nf-repeatmasking'
-  cpus 4
+  container 'file://./nf-pipelines_repo.sif'
+  cpus 10
 
   input:
   file 'genome.masked' from genomeLtrMasked
@@ -402,7 +402,7 @@ identityKnown
 .set{ repeatmaskerKnowns }
 
 process searchForUnidentifiedElements {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
 
   input:
   file 'genome.fasta' from reference
@@ -424,7 +424,7 @@ RepeatMasker \
 }
 
 process derip {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
 
   input:
   set 'genome.fasta.align', 'unknown_elements.fasta' from unknownAlignments
@@ -472,8 +472,8 @@ transposon_blast_parse.pl \
 identifiedDerippedTransposons.subscribe{ println("Identified, deripped: ${it}") }
 
 process transposonBlast {
-  container 'luciazifcakova/nf-repeatmasking'
-  cpus 4
+  container 'file://./nf-pipelines_repo.sif'
+  cpus 10
 
   input:
   file 'transposases.fasta.gz' from trnaprot
@@ -513,7 +513,7 @@ process predict_ncRNA {
   """
 cp /opt/data/cm/rnas.cm models.cm
 cmpress -F models.cm
-cmsearch --cpu 1 --tblout cm_out --cut_ga models.cm genome.fasta
+cmsearch --cpu 10 --tblout cm_out --cut_ga models.cm genome.fasta
   """
 }
 
@@ -543,7 +543,7 @@ repeatmaskerKnowns
 .set { knownRepeats }
 
 process repeatMaskerKnowns {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
   publishDir "${params.outdir}/repeatMaskerKnowns", mode: 'copy'
 
   input:
@@ -568,7 +568,7 @@ RepeatMasker \
 }
 
 process removeShortMatches {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
   publishDir "${params.outdir}/cleanMasked", mode: 'copy'
 
   input:
@@ -587,7 +587,7 @@ maskFastaFromBed -fi reference.fa -bed rm.trimmed.bed -fo rm.trimmed.masked -sof
 }
 
 process octfta {
-  container 'luciazifcakova/nf-repeatmasking'
+  container 'file://./nf-pipelines_repo.sif'
 
   input:
   file 'reference.fa' from reference
@@ -645,3 +645,4 @@ workflow.onComplete {
     log.info "Pipeline completed at: $workflow.complete"
     log.info "Execution status: ${ workflow.success ? 'OK' : 'failed' }"
 }
+
